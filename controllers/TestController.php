@@ -16,6 +16,8 @@ class TestController extends Controller
      */
     public function actionIndex()
     {
+      return \Yii::$app->test->run();
+
       $product = new Product();
       $product->id = 1;
       $product->name = 'NVIDIA GEFORCE 1060';

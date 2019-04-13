@@ -3,6 +3,7 @@
 namespace app\models;
 
 use Yii;
+use \yii\db\ActiveRecord;
 
 /**
  * This is the model class for table "product".
@@ -12,8 +13,21 @@ use Yii;
  * @property string $price
  * @property int $created_at
  */
-class Product extends \yii\db\ActiveRecord
+class Product extends ActiveRecord
 {
+
+    const SCENARIO_UPDATE = 'update';
+    const SCENARIO_CREATE = 'create';
+
+    public function scenarios()
+    {
+        return [
+            self::SCENARIO_DEFAULT => ['name'],
+            self::SCENARIO_UPDATE => ['price'],
+            self::SCENARIO_CREATE => ['name'],
+        ];
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -30,7 +44,12 @@ class Product extends \yii\db\ActiveRecord
         return [
             [['name', 'price', 'created_at'], 'required'],
             [['created_at'], 'integer'],
-            [['name', 'price'], 'string', 'max' => 50],
+            [['name'], 'string', 'max' => 20],
+            [['name'], 'filter', 'filter' => function($value){
+              return strip_tags(trim($value));
+            }],
+            [['price'], 'integer', 'min' => 1, 'max' => '999']
+
         ];
     }
 

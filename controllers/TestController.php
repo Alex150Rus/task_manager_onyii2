@@ -3,7 +3,6 @@
 namespace app\controllers;
 
 
-use app\models\Product;
 use yii\db\Query;
 use yii\helpers\VarDumper;
 use yii\web\Controller;
@@ -24,16 +23,7 @@ class TestController extends Controller
         _end($data);
       //return \Yii::$app->test->run();
 
-      /*$product = new Product();
-      $product->id = 1;
-      $product->name = 'NVIDIA GEFORCE 1060';
-      $product->category = 'видеокарты';
-      $product->price = 25000;
-      $content = 'Hello from test controller / action index';*/
-      return $this->render('index', [
-        'content' => $content,
-        'product' => $product
-        ]);
+      return $this->render('index');
     }
 
     /**
@@ -44,7 +34,7 @@ class TestController extends Controller
      */
     public function actionInsert(){
         $db = \Yii::$app->db;
-        $data = $db->createCommand('SELECT * FROM user') ->queryAll();
+        $data = $db->createCommand('SELECT * FROM task') ->queryAll();
 
         /*$db->createCommand()->insert('user', [
             'username' => 'Alex',
@@ -76,11 +66,11 @@ class TestController extends Controller
             'updated_at' => time(),
         ])->execute();*/
 
-       /* $db->createCommand()->batchInsert('user',
-            ['username','password_hash', 'auth_key', 'creator_id', 'updater_id', 'created_at', 'updated_at'],[
-            ['Vasya','dsjshfk','156', 4, 4, time(), time()],
-            ['Olya','djhdskf','166', 5, 5, time(), time()],
-            ['Katya','dfdsslfdk','178', 6, 6, time(), time()]]
+        /*$db->createCommand()->batchInsert('task',
+            ['title','description', 'creator_id', 'updater_id', 'created_at', 'updated_at'],[
+            ['JS','стать крутым разработчиком', 1, 1, time(), time()],
+            ['NodeJS','практиковаться в Node.JS', 2, 2, time(), time()],
+            ['CodeWars','периодически заглядывать на портал и выполнять упражнения', 3, 3, time(), time()]]
         )->execute();*/
 
         return _end($data);
@@ -94,19 +84,13 @@ class TestController extends Controller
      */
     public function actionSelect() {
 
-        $dbConnection1 = new Query();
-        $data = $dbConnection1->from('user')->where(['id' => 1])->one();
+        $data = (new Query()) -> from('user')->where(['id' => 1])->one();
 
-        $dbConnection2 = new Query();
-        $data2 = $dbConnection2->from('user')->where(['>', 'id', 1])->orderBy('username')->all();
+        $data2 = (new Query()) ->from('user')->where(['>', 'id', 1])->orderBy('username')->all();
 
-        $dbConnection3 = new Query();
-        $data3 = $dbConnection3->from('user')->count();
+        $data3 = (new Query()) ->from('user')->count();
 
-
-        /*Пока ничего не выведет, так как таблица task не заполнена
-         * $dbConnection4 = new Query();
-        $data4 = $dbConnection4->from('task')->innerJoin('user','creator_id = user_id')->all();*/
+        $data4 = (new Query()) ->from('task')->innerJoin('user','task.creator_id = user.id')->all();
 
        VarDumper::dump([$data, $data2, $data3, $data4], 5, true);
 

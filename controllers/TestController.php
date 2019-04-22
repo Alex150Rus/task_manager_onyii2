@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 
+use app\models\Task;
 use yii\db\Query;
 use yii\helpers\VarDumper;
 use yii\web\Controller;
@@ -18,9 +19,13 @@ class TestController extends Controller
      */
     public function actionIndex()
     {
+        $task = new Task();
+        $task -> description ='описание';
+        $task -> title = 'название';
+        $task -> save();
 
-        $data = \Yii::$app->db->createCommand('SELECT * FROM product')->queryAll();
-        _end($data);
+        //$data = \Yii::$app->db->createCommand('SELECT * FROM product')->queryAll();
+        _end($task);
       //return \Yii::$app->test->run();
 
       return $this->render('index');

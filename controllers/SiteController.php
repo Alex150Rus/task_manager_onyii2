@@ -25,6 +25,7 @@ class SiteController extends Controller
                     [
                         'actions' => ['logout'],
                         'allow' => true,
+                        //@ - означает аутентифицированные пользователи
                         'roles' => ['@'],
                     ],
                 ],

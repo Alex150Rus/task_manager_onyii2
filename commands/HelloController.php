@@ -9,6 +9,7 @@ namespace app\commands;
 
 use yii\console\Controller;
 use yii\console\ExitCode;
+use yii\helpers\Console;
 
 /**
  * This command echoes the first argument that you have entered.
@@ -25,9 +26,11 @@ class HelloController extends Controller
      * @param string $message the message to be echoed.
      * @return int Exit code
      */
-    public function actionIndex($message = 'hello world')
+    public function actionIndex($message = 'hello world', $par1 = '')
     {
-        echo $message . "\n";
+        //echo $message . $par1 . "\n";
+        //более правильный вывод:
+        $this->stdout($message, Console::BG_BLUE);
 
         return ExitCode::OK;
     }

@@ -104,18 +104,28 @@ class UserController extends Controller
      * @param integer $id
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
+     * @throws ForbiddenHttpException if user is not Admin
      */
     public function actionUpdate($id)
     {
-        $model = $this->findModel($id);
-        $model -> setScenario(self::SCENARIO_UPDATE);
+        $user = $this->findModel($id);
+        $userId = Yii::$app->user->id;
+        $user -> setScenario(self::SCENARIO_UPDATE);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        if (!$user) {
+            throw new NotFoundHttpException();
+        }
+
+        if ($userId != User::ADMIN_ID){
+            throw new ForbiddenHttpException('Только админ может изменить данные пользователя');
+        }
+
+        if ($user->load(Yii::$app->request->post()) && $user->save()) {
+            return $this->redirect(['view', 'id' => $user->id]);
         }
 
         return $this->render('update', [
-            'model' => $model,
+            'model' => $user,
         ]);
     }
 

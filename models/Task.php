@@ -32,6 +32,7 @@ class Task extends \yii\db\ActiveRecord
     const RELATION_CREATOR = 'creator';
     const RELATION_TASK_USERS = 'taskUsers';
     const RELATION_ACCESSED_USERS = 'accessedUsers';
+    const RELATION_SHARED_USERS = 'sharedUsers';
 
     /**
      * {@inheritdoc}
@@ -107,7 +108,16 @@ class Task extends \yii\db\ActiveRecord
      */
     public function getTaskUsers()
     {
-        return $this->hasMany(TaskUser::className(), ['user_id' => 'id']);
+        return $this->hasMany(TaskUser::className(), ['task_id' => 'id']);
+    }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getSharedUsers()
+    {
+        return $this->hasMany(User::className(), ['id' => 'user_id'])
+            ->via(self::RELATION_TASK_USERS);
     }
 
     /**

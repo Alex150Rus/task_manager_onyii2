@@ -7,9 +7,11 @@ $db = require __DIR__ . '/db.php';
 
 $config = [
     'id' => 'basic',
+    'name' => 'MyTaskManager',
     'language' => 'ru',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
+    'timeZone' => 'Europe/Moscow',
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
@@ -64,6 +66,12 @@ $config = [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                /*чем выше правило, тем более приоритетно
+                можно создавать свои гибкие правила, унаследовавшись от \yii\web\UrlRule:: и переназначив методы
+                parseRequest и createUrl. Таким образом в url можно будет подтягивать значения из БД */
+                '<controller:[\w-]+>s' => '<controller>/index',
+                '<controller:[\w-]+>/<id:\d+>' => '<controller>/view',
+                'task/id/<id:\d+>' => 'task/view',
             ],
         ],
     ],

@@ -7,7 +7,7 @@ use yii\widgets\Pjax;
 /* @var $this yii\web\View */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Tasks';
+$this->title = 'My Tasks';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="task-index">

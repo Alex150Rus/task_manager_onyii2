@@ -28,6 +28,8 @@ class User extends \yii\db\ActiveRecord implements IdentityInterface
 {
     public $password;
     const RELATION_TASKS = 'tasks';
+    const RELATION_TASK_USERS = 'taskUsers';
+    const ADMIN_ID =  28;
     /**
      * {@inheritdoc}
      */

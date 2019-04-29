@@ -106,8 +106,8 @@ class TaskUserController extends Controller
         $model = $this->findModel($id);
         $creator = (join(', ',
             \app\models\Task::find()->where(['id' => $model->task_id])->select('creator_id')->column()));
-        if (!$model && $creator != Yii::$app->user->id) {
-            throw new ForbiddenHttpException();
+        if (!$model || $creator != Yii::$app->user->id) {
+            throw new ForbiddenHttpException('задача создана не вами или не существует');
         }
 
         $model->delete();

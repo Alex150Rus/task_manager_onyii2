@@ -17,6 +17,8 @@ use yii\filters\VerbFilter;
  */
 class UserController extends Controller
 {
+    const SCENARIO_CREATE = 'create';
+    const SCENARIO_UPDATE = 'update';
     /**
      * {@inheritdoc}
      */
@@ -77,11 +79,13 @@ class UserController extends Controller
      */
     public function actionCreate()
     {
+
         if (Yii::$app->user->id != 28) {
             throw new ForbiddenHttpException('только админу можно');
         }
 
         $model = new User();
+        $model -> setScenario(self::SCENARIO_CREATE);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
@@ -102,6 +106,7 @@ class UserController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        $model -> setScenario(self::SCENARIO_UPDATE);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);

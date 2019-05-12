@@ -4,7 +4,9 @@ namespace app\controllers;
 
 
 use app\models\Task;
+use yii\BaseYii;
 use yii\db\Query;
+use yii\helpers\Url;
 use yii\helpers\VarDumper;
 use yii\web\Controller;
 
@@ -19,6 +21,14 @@ class TestController extends Controller
      */
     public function actionIndex()
     {
+        //true добавляет к относительному адресу текущий домен и получится абсолютный адрес
+        //Url::to(['task/veiw', 'id' => 1], true);
+        //Url::to('task/1/');
+
+        // вот так можно посмотреть элиасы _end(\Yii::$aliases); getAlias('@runtime/logs/pay.log') - расшифрует алиас
+        // setAlias() - установит элиас
+
+        _end(\Yii::t('yii', 'File upload failed.'));
 
         //\Yii::$app->cache;
        /* $task = new Task();

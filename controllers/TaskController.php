@@ -5,6 +5,7 @@ namespace app\controllers;
 use Yii;
 use app\models\Task;
 use yii\data\ActiveDataProvider;
+use yii\db\Exception;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -15,6 +16,9 @@ use yii\filters\VerbFilter;
  */
 class TaskController extends Controller
 {
+
+    public $defaultAction = 'my';
+
     /**
      * {@inheritdoc}
      */
@@ -57,15 +61,70 @@ class TaskController extends Controller
     }
 
     /**
+     * Lists all Task models.
+     * @return mixed
+     */
+    public function actionShared()
+    {
+        $query = Task::find()
+            ->byCreator(Yii::$app->user->id)
+            ->innerJoinWith(Task::RELATION_TASK_USERS);
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        return $this->render('shared', [
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    /**
+     * Lists all Task models.
+     * @return mixed
+     */
+    public function actionAccessed()
+    {
+        $query = Task::find()
+            ->innerJoinWith(Task::RELATION_TASK_USERS)
+            ->where(['user_id' => Yii::$app->user->id]);
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $dataProvider->pagination->pageSize = 5;
+
+        return $this->render('accessed', [
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    /**
      * Displays a single Task model.
      * @param integer $id
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
+     * @throws Exception if user is not creator and not in the accessed list
      */
     public function actionView($id)
     {
+        $userId = Yii::$app->user->id;
+        $task = $this->findModel($id);
+
+        if ($userId !== $task->creator->id && !array_key_exists($userId, $task->getSharedUsers()->indexBy('id')->all())){
+            throw new Exception('Только создатель или допущенный пользователь может смотреть задачу');
+        }
+
+        $dataProvider = new ActiveDataProvider([
+
+            // вернуть AR, который выведет все элементы task_users, гду task_id - id текущей модели
+            'query' => $task->getTaskUsers(),
+        ]);
+
         return $this->render('view', [
-            'model' => $this->findModel($id),
+            'model' => $task,
+            'dataProvider' => $dataProvider,
         ]);
     }
 
@@ -79,7 +138,8 @@ class TaskController extends Controller
         $model = new Task();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+            Yii::$app->session->setFlash('success', 'create success');
+            return $this->redirect(['task/my']);
         }
 
         return $this->render('create', [
@@ -93,12 +153,20 @@ class TaskController extends Controller
      * @param integer $id
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
+     * @throws Exception if user in not a creator of task
      */
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
 
+        $userId = Yii::$app->user->id;
+
+        if ($userId !== $this->findModel($id)->creator->id){
+            throw new Exception('Только создатель может изменять задачу');
+        }
+
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            Yii::$app->session->setFlash('success', 'update success');
             return $this->redirect(['view', 'id' => $model->id]);
         }
 
@@ -112,13 +180,27 @@ class TaskController extends Controller
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
      * @return mixed
-     * @throws NotFoundHttpException if the model cannot be found
+     * @throws Exception if user is not creator
+     * @throws NotFoundHttpException if model(Task) hasn't been found
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $userId = Yii::$app->user->id;
+        $model = $this->findModel($id);
 
-        return $this->redirect(['index']);
+        if (!$model) {
+            throw new NotFoundHttpException();
+        }
+
+        if ($userId !== $model->creator->id){
+            throw new Exception('Только создатель может удалить задачу');
+        }
+
+        $model->unlinkAll(Task::RELATION_TASK_USERS, true);
+        $model->delete();
+        Yii::$app->session->setFlash('success', 'delete success');
+
+        return $this->redirect(['task/my']);
     }
 
     /**

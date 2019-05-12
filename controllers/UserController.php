@@ -6,6 +6,7 @@ use Yii;
 use app\models\User;
 use app\models\Task;
 use yii\data\ActiveDataProvider;
+use yii\db\Exception;
 use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\ForbiddenHttpException;
@@ -75,12 +76,13 @@ class UserController extends Controller
     /**
      * Creates a new User model.
      * If creation is successful, the browser will be redirected to the 'view' page.
+     * @throws ForbiddenHttpException if user is not admin
      * @return mixed
      */
     public function actionCreate()
     {
 
-        if (Yii::$app->user->id != 28) {
+        if (Yii::$app->user->id != User::ADMIN_ID) {
             throw new ForbiddenHttpException('только админу можно');
         }
 
@@ -102,18 +104,28 @@ class UserController extends Controller
      * @param integer $id
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
+     * @throws ForbiddenHttpException if user is not Admin
      */
     public function actionUpdate($id)
     {
-        $model = $this->findModel($id);
-        $model -> setScenario(self::SCENARIO_UPDATE);
+        $user = $this->findModel($id);
+        $userId = Yii::$app->user->id;
+        $user -> setScenario(self::SCENARIO_UPDATE);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+        if (!$user) {
+            throw new NotFoundHttpException();
+        }
+
+        if ($userId != User::ADMIN_ID){
+            throw new ForbiddenHttpException('Только админ может изменить данные пользователя');
+        }
+
+        if ($user->load(Yii::$app->request->post()) && $user->save()) {
+            return $this->redirect(['view', 'id' => $user->id]);
         }
 
         return $this->render('update', [
-            'model' => $model,
+            'model' => $user,
         ]);
     }
 
@@ -123,10 +135,25 @@ class UserController extends Controller
      * @param integer $id
      * @return mixed
      * @throws NotFoundHttpException if the model cannot be found
+     * @throws ForbiddenHttpException if user is not Admin
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+
+        $userId = Yii::$app->user->id;
+        $user = $this->findModel($id);
+
+        if (!$user) {
+            throw new NotFoundHttpException();
+        }
+
+        if ($userId != User::ADMIN_ID){
+            throw new ForbiddenHttpException('Только админ может удалить пользователя');
+        }
+
+        $user->unlinkAll(User::RELATION_TASK_USERS, true);
+        $user->delete();
+        Yii::$app->session->setFlash('success', 'delete success');
 
         return $this->redirect(['index']);
     }
@@ -145,69 +172,5 @@ class UserController extends Controller
         }
 
         throw new NotFoundHttpException('The requested page does not exist.');
-    }
-
-    /**
-     * Displays test page.
-     *
-     *
-     * @throws \yii\db\Exception
-     */
-    public function actionTest()
-    {
-       /* $user= new User();
-        $user->username = 'Jenya';
-        $user->password_hash = 'gksjzhgfkz';
-        $user->auth_key ='sdfhksjazgf';
-        $user->creator_id = 8;
-        $user->updater_id = 8;
-        $user->created_at = time();
-        $user->updated_at = time();
-        $user->save();*/
-
-       /* $user = User::findOne(4);
-        $task = new Task();
-        $task->title = 'yii2';
-        $task->description = 'сдать ДЗ 5';
-        $task->created_at;
-        $task -> link (Task::RELATION_CREATOR, $user);
-
-        $user = User::findOne(4);
-        $task = new Task();
-        $task->title = 'yii2';
-        $task->description = 'получить оценку за ДЗ 5';
-        $task->created_at;
-        $task -> link (Task::RELATION_CREATOR, $user);
-
-        $user = User::findOne(5);
-        $task = new Task();
-        $task->title = 'yii2';
-        $task->description = 'помочь другу с ДЗ 5';
-        $task->created_at;
-        $task -> link (Task::RELATION_CREATOR, $user);*/
-
-        /*$users = User::find()->with(User::RELATION_TASKS)->asArray()->all();
-        _end($users);*/
-
-        /*$usersJoin = User::find()->joinWith(User::RELATION_TASKS)->asArray()->all();
-        _end($usersJoin);*/
-
-        //Дадим 6-ому пользователю доступ к третьей задаче:
-        $user = User::findOne(5);
-        $task = Task::findOne(3);
-        $task -> link (Task::RELATION_ACCESSED_USERS, $user);
-
-        $tasks = Task::find()->joinWith(Task::RELATION_TASK_USERS)->asArray()->indexBy('id')->all();
-        _end($tasks);
-
-
-        $dataProvider = new ActiveDataProvider([
-            'query' => User::find(),
-        ]);
-
-        return $this->render('index', [
-            'dataProvider' => $dataProvider,
-        ]);
-
     }
 }

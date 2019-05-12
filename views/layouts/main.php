@@ -41,7 +41,8 @@ AppAsset::register($this);
             ['label' => 'Home', 'url' => ['/site/index']],
             ['label' => 'MyTasks', 'url' => ['/task/my']],
             ['label' => 'CreateTask', 'url' => ['/task/create']],
-            ['label' => 'Test', 'url' => ['/test/index']],
+            ['label' => 'SharedTasks', 'url' => ['/task/shared']],
+            ['label' => 'AccessedTasks', 'url' => ['/task/accessed']],
             Yii::$app->user->isGuest ? (
                 ['label' => 'Login', 'url' => ['/site/login']]
             ) : (
@@ -70,7 +71,7 @@ AppAsset::register($this);
 
 <footer class="footer">
     <div class="container">
-        <p class="pull-left">&copy; My Company <?= date('Y') ?></p>
+        <p class="pull-left">&copy; Alex Medvedev <?= date('Y') ?></p>
 
         <p class="pull-right"><?= Yii::powered() ?></p>
     </div>
